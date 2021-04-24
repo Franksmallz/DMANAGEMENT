@@ -17,5 +17,5 @@ RUN dotnet publish "DispatchMgt.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
-COPY . ./
-ENTRYPOINT ["dotnet","DispatchMgt.dll"]
+COPY --from=publish /app/publish .
+CMD ASPNETCORE_URLS=http://*:$PORT dotnet DispatchMgt.dll
