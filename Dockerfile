@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:5.0 as server
+FROM mcr.microsoft.com/dotnet/core/sdk:3.0 as server
 
 ENV ASPNETCORE_Environment=Production
 
