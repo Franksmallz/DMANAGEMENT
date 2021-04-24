@@ -1,22 +1,17 @@
-#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
-FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
+FROM mcr.microsoft.com/dotnet/core/sdk:5.0 AS build
 WORKDIR /app
-#EXPOSE 80
 
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build
-WORKDIR /src
-COPY ["DispatchMgt.csproj", "."]
-RUN dotnet restore "./DispatchMgt.csproj"
-COPY . .
-WORKDIR "/src/."
-RUN dotnet build "DispatchMgt.csproj" -c Release -o /app/build
+# copy csproj and restore as distinct layers
+COPY *.sln .
+COPY DispatchMgt/*.csproj ./DispatchMgt/
+RUN dotnet restore
 
-FROM build AS publish
-RUN dotnet publish "DispatchMgt.csproj" -c Release -o /app/publish
+# copy everything else and build app
+COPY DispatchMgt/. ./DispatchMgt/
+WORKDIR /app/DispatchMgt
+RUN dotnet publish -c Release -o out
 
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/core/aspnet:5.0 AS runtime
 WORKDIR /app
-WORKDIR /app
-COPY . ./
-ENTRYPOINT ["dotnet","DispatchMgt.dll"]
+COPY --from=build /app/DispatchMgt/out ./
+ENTRYPOINT ["dotnet", "DispatchMgt.dll"]
